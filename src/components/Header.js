@@ -21,7 +21,7 @@ export default function Header({ mode }) {
       <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div className="badge">{isAdmin ? 'ADMIN' : 'EMPLOYEE'}</div>
-          <h2 style={{ marginTop: 10 }}>Employee Questionnaire</h2>
+          <h2 style={{ marginTop: 10 }}>Hero Steels – Employee Questionnaire</h2>
           <div className="muted" style={{ fontSize: 13 }}>
             React + Firebase (Auth optional) + Firestore
           </div>
