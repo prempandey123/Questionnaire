@@ -26,7 +26,7 @@ export async function countQuestionnaires() {
   return snap.size;
 }
 
-export async function createQuestionnaire({ title, description, isPublished }) {
+export async function createQuestionnaire({ title, description, isPublished, departments }) {
   const current = await countQuestionnaires();
   if (current >= LIMITS.maxQuestionnaires) {
     throw new Error(`Maximum ${LIMITS.maxQuestionnaires} questionnaires reached.`);
@@ -36,6 +36,8 @@ export async function createQuestionnaire({ title, description, isPublished }) {
     title: title.trim(),
     description: description.trim(),
     isPublished: Boolean(isPublished),
+    // If empty/undefined => available to all departments
+    departments: Array.isArray(departments) ? departments : [],
     questionsCount: 0,
     createdAt: serverTimestamp()
   });

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../components/Header';
-import { LIMITS } from '../config';
+import { LIMITS, DEPARTMENTS } from '../config';
 import {
   createQuestionnaire,
   listQuestionnaires,
@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(false);
+  const [deptSelectionMode, setDeptSelectionMode] = useState('ALL'); // ALL | SOME
+  const [selectedDepts, setSelectedDepts] = useState([]);
 
   // question add
   const [selectedQuizId, setSelectedQuizId] = useState('');
@@ -85,16 +87,25 @@ export default function AdminDashboard() {
     setErr('');
     setMsg('');
     try {
-      const id = await createQuestionnaire({ title, description, isPublished });
+      const departments = deptSelectionMode === 'ALL' ? [] : selectedDepts;
+      const id = await createQuestionnaire({ title, description, isPublished, departments });
       setTitle('');
       setDescription('');
       setIsPublished(false);
+      setDeptSelectionMode('ALL');
+      setSelectedDepts([]);
       setSelectedQuizId(id);
       await refresh();
       setMsg('Questionnaire created. Now add questions (max 20).');
     } catch (e2) {
       setErr(e2?.message || 'Create failed');
     }
+  };
+
+  const toggleDept = (dept) => {
+    setSelectedDepts((prev) =>
+      prev.includes(dept) ? prev.filter((d) => d !== dept) : [...prev, dept]
+    );
   };
 
   const togglePublish = async (quiz) => {
@@ -190,6 +201,51 @@ export default function AdminDashboard() {
                   <input type="checkbox" checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} />
                   <span>Publish immediately</span>
                 </label>
+
+                <div className="card" style={{ padding: 12, borderRadius: 14 }}>
+                  <div className="badge">Visibility</div>
+                  <div style={{ marginTop: 10, display: 'grid', gap: 10 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input
+                        type="radio"
+                        name="dept_mode"
+                        checked={deptSelectionMode === 'ALL'}
+                        onChange={() => setDeptSelectionMode('ALL')}
+                      />
+                      <span>All Departments</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input
+                        type="radio"
+                        name="dept_mode"
+                        checked={deptSelectionMode === 'SOME'}
+                        onChange={() => setDeptSelectionMode('SOME')}
+                      />
+                      <span>Only Selected Departments</span>
+                    </label>
+
+                    {deptSelectionMode === 'SOME' ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                        {DEPARTMENTS.map((d) => (
+                          <label key={d} className="card" style={{ padding: 10, borderRadius: 12, cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedDepts.includes(d)}
+                              onChange={() => toggleDept(d)}
+                              style={{ marginRight: 8 }}
+                            />
+                            {d}
+                          </label>
+                        ))}
+                        <div className="muted" style={{ gridColumn: '1 / -1', marginTop: 4 }}>
+                          Employees will only see this questionnaire if they select one of the above departments.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="muted">Visible to everyone in the organization.</div>
+                    )}
+                  </div>
+                </div>
                 <button className="btn" type="submit">Create</button>
               </form>
             </div>

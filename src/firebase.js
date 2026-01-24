@@ -5,13 +5,13 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBw8R0I1JS-aiKFkXJ41_x7M367Cct1Tf8",
-  authDomain: "herosteels-quiz.firebaseapp.com",
-  projectId: "herosteels-quiz",
-  storageBucket: "herosteels-quiz.firebasestorage.app",
-  messagingSenderId: "787656898836",
-  appId: "1:787656898836:web:ea9846107a045a02122a01",
-  measurementId: "G-N182PJLLDZ"
+  apiKey: "AIzaSyCG4hkpBWL2chZKjcDSox3N8VOb5Cr9qrA",
+  authDomain: "questionnaire-b99ce.firebaseapp.com",
+  projectId: "questionnaire-b99ce",
+  storageBucket: "questionnaire-b99ce.firebasestorage.app",
+  messagingSenderId: "147617113820",
+  appId: "1:147617113820:web:1aa1eed772bcd27145b619",
+  measurementId: "G-L66VLSTCKZ"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
