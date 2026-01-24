@@ -35,7 +35,7 @@ export async function createQuestionnaire({ title, description, isPublished, dep
   const ref = await addDoc(questionnairesCol, {
     title: title.trim(),
     description: description.trim(),
-    isPublished: Boolean(isPublished),
+    isPublished: true,
     // If empty/undefined => available to all departments
     departments: Array.isArray(departments) ? departments : [],
     questionsCount: 0,
@@ -55,13 +55,21 @@ export async function deleteQuestionnaire(quizId) {
   await deleteDoc(doc(db, 'questionnaires', quizId));
 }
 
-export async function listQuestionnaires({ onlyPublished = false } = {}) {
-  const q = onlyPublished
-    ? query(questionnairesCol, where('isPublished', '==', true), orderBy('createdAt', 'desc'))
-    : query(questionnairesCol, orderBy('createdAt', 'desc'));
+export async function listQuestionnaires({ department, onlyPublished } = {}) {
+  const constraints = [];
+  if (onlyPublished) constraints.push(where('isPublished', '==', true));
+  if (department) constraints.push(where('departments', 'array-contains', department));
+
+  const q = constraints.length
+    ? query(questionnairesCol, ...constraints)
+    : query(questionnairesCol);
 
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  // client-side sort to avoid composite index requirement
+  list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  return list;
 }
 
 export async function getQuestionnaire(quizId) {
