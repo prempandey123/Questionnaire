@@ -8,7 +8,7 @@ export const ADMIN_LOGIN = {
 // Firestore limits (as requested)
 export const LIMITS = {
   maxQuestionnaires: 50,
-  questionsPerQuestionnaire: 20
+  questionsPerQuestionnaire: 15
 };
 
 // Organization departments (edit as per your org)

@@ -12,7 +12,7 @@ export default function SubmitSuccess() {
     <>
       <Header />
       <div className="container">
-        <div className="card" style={{ textAlign: 'center' }}>
+        <div className="card" style={{ textAlign: "center", maxWidth: 720, margin: "22px auto 0" }}>
           <div className="badge">SUBMITTED</div>
           <h1 style={{ marginTop: 12 }}>Thank you!</h1>
           {title ? <p className="muted">Questionnaire: <b>{title}</b></p> : null}

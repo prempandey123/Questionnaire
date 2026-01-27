@@ -61,7 +61,7 @@ export default function EmployeeHome() {
             <div className="card">
               <h2>Employee Details</h2>
               <p className="muted">Select your department first, then enter your name.</p>
-              <div style={{ display: 'grid', gap: 10 }}>
+              <div className="stack">
                 <div>
                   <label className="label">Department *</label>
                   <select value={department} onChange={(e) => setDepartment(e.target.value)}>
@@ -88,7 +88,7 @@ export default function EmployeeHome() {
           <div className="col">
             <div className="card">
               <h2>Available Questionnaires</h2>
-              <p className="muted">Choose one to start (each can have up to 20 questions).</p>
+              <p className="muted">Choose one to start (each has 15 questions (2 min timer)).</p>
 
               {loading ? (
                 <p className="muted">Loading...</p>
@@ -97,12 +97,12 @@ export default function EmployeeHome() {
               ) : visibleQuizzes.length === 0 ? (
                 <div className="alert">No published questionnaires yet. Please contact Admin.</div>
               ) : (
-                <div style={{ display: 'grid', gap: 12 }}>
+                <div className="grid">
                   {visibleQuizzes.map((q) => (
-                    <div key={q.id} className="card" style={{ borderRadius: 14, padding: 14 }}>
+                    <div key={q.id} className="card card-hover">
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                         <div>
-                          <div className="badge">Questions: {q.questionsCount || 0}/20</div>
+                          <div className="badge">Questions: {q.questionsCount || 0}/15</div>
                           <h3 style={{ marginTop: 10 }}>{q.title}</h3>
                           {q.description ? <div className="muted" style={{ marginTop: 4 }}>{q.description}</div> : null}
                         </div>

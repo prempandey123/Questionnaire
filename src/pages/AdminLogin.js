@@ -24,7 +24,7 @@ export default function AdminLogin() {
     <>
       <Header mode="admin" />
       <div className="container">
-        <div className="card" style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="card" style={{ maxWidth: 520, margin: "22px auto 0" }}>
           <h2>Admin Login</h2>
           <p className="muted">Hardcoded login only (as requested). Change credentials in <b>src/config.js</b>.</p>
 
@@ -38,7 +38,7 @@ export default function AdminLogin() {
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="admin@123" />
             </div>
             {err ? <div className="alert">{err}</div> : null}
-            <button className="btn" type="submit">Login</button>
+            <button className="btn btn-primary" type="submit">Login</button>
           </form>
         </div>
       </div>
