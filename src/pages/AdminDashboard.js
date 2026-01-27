@@ -393,7 +393,7 @@ export default function AdminDashboard() {
                             if (!latest) return '—';
                             const dt = latest.createdAt?.toDate ? latest.createdAt.toDate() : null;
                             const when = dt ? dt.toLocaleString() : '';
-                            return `${latest.name || '—'} • ${latest.quizTitle || '—'}${when ? ` • ${when}` : ''}`;
+                            return `${latest.employeeId ? latest.employeeId + ' • ' : ''}${latest.name || '—'} • ${latest.quizTitle || '—'}${when ? ` • ${when}` : ''}`;
                           })()}
                         </div>
                       </div>

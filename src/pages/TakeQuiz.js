@@ -36,9 +36,10 @@ export default function TakeQuiz() {
 
   const name = localStorage.getItem('emp_name') || '';
   const department = localStorage.getItem('emp_dept') || '';
+  const employeeId = localStorage.getItem('emp_id') || '';
 
   useEffect(() => {
-    if (!name.trim()) {
+    if (!name.trim() || !/^HSL\d{4}$/.test(employeeId.trim().toUpperCase())) {
       nav('/', { replace: true });
       return;
     }
@@ -130,6 +131,7 @@ export default function TakeQuiz() {
       });
 
       await submitResult({
+        employeeId: employeeId.trim().toUpperCase(),
         name,
         department,
         quizId,
@@ -166,7 +168,7 @@ export default function TakeQuiz() {
                 <div>
                   <span className="pill">🧠 {questions.length} Questions • ⏱ 02:00</span>
                   <h2 style={{ marginTop: 10 }}>{quiz?.title}</h2>
-                  <div className="muted">Employee: <b>{name}</b> {department ? `(${department})` : ''}</div>
+                  <div className="muted">Employee: <b>{name}</b> {department ? `(${department})` : ''} <span className="muted">•</span> <span className="pill" style={{ padding: '4px 10px' }}>{employeeId}</span></div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>

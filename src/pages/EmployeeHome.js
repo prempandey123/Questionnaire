@@ -9,6 +9,7 @@ export default function EmployeeHome() {
   // Requirement: employee must select department first
   const [department, setDepartment] = useState(localStorage.getItem('emp_dept') || '');
   const [name, setName] = useState(localStorage.getItem('emp_name') || '');
+  const [employeeId, setEmployeeId] = useState(localStorage.getItem('emp_id') || '');
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -28,17 +29,23 @@ export default function EmployeeHome() {
   }, []);
 
   const canStart = useMemo(
-    () => department.trim().length > 0 && name.trim().length >= 2,
-    [department, name]
+    () => {
+      const deptOk = department.trim().length > 0;
+      const nameOk = name.trim().length >= 2;
+      const idOk = /^HSL\d{4}$/.test(employeeId.trim().toUpperCase());
+      return deptOk && nameOk && idOk;
+    },
+    [department, name, employeeId]
   );
 
   const start = (quizId) => {
     if (!canStart) {
-      setErr('Please select your department and enter your name to continue.');
+      setErr('Please select your department, enter your name, and a valid Employee ID (HSL0000 format).');
       return;
     }
     localStorage.setItem('emp_name', name.trim());
     localStorage.setItem('emp_dept', department.trim());
+    localStorage.setItem('emp_id', employeeId.trim().toUpperCase());
     nav(`/quiz/${quizId}`);
   };
 
@@ -60,7 +67,7 @@ export default function EmployeeHome() {
           <div className="col">
             <div className="card">
               <h2>Employee Details</h2>
-              <p className="muted">Select your department first, then enter your name.</p>
+              <p className="muted">Select your department, then enter your name and Employee ID.</p>
               <div className="stack">
                 <div>
                   <label className="label">Department *</label>
@@ -79,6 +86,16 @@ export default function EmployeeHome() {
                     placeholder="Your full name"
                     disabled={!department}
                   />
+                </div>
+                <div>
+                  <label className="label">Employee ID *</label>
+                  <input
+                    value={employeeId}
+                    onChange={(e) => setEmployeeId(e.target.value.toUpperCase())}
+                    placeholder="HSL0000"
+                    disabled={!department}
+                  />
+                  <div className="muted" style={{ marginTop: 6, fontSize: 12 }}>Format: HSL0000 (e.g., HSL0001)</div>
                 </div>
               </div>
               {err ? <div className="alert" style={{ marginTop: 12 }}>{err}</div> : null}

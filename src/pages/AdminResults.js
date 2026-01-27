@@ -33,6 +33,7 @@ export default function AdminResults() {
   const [filterQuizId, setFilterQuizId] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [searchName, setSearchName] = useState('');
+  const [searchEmpId, setSearchEmpId] = useState('');
   const [fromDate, setFromDate] = useState(''); // yyyy-mm-dd
   const [toDateStr, setToDateStr] = useState(''); // yyyy-mm-dd
 
@@ -83,6 +84,10 @@ export default function AdminResults() {
       const q = searchName.trim().toLowerCase();
       r = r.filter((x) => String(x.name || '').toLowerCase().includes(q));
     }
+    if (searchEmpId.trim()) {
+      const q = searchEmpId.trim().toUpperCase();
+      r = r.filter((x) => String(x.employeeId || '').toUpperCase().includes(q));
+    }
 
     const from = fromDate ? new Date(fromDate + 'T00:00:00') : null;
     const to = toDateStr ? new Date(toDateStr + 'T23:59:59') : null;
@@ -111,6 +116,7 @@ export default function AdminResults() {
 
   const exportXlsx = () => {
     const rows = filteredResults.map((r) => ({
+      EmployeeID: r.employeeId || '',
       Name: r.name || '',
       Department: r.department || '',
       Quiz: r.quizTitle || '',
@@ -130,6 +136,7 @@ export default function AdminResults() {
 
   const exportCsv = () => {
     const rows = filteredResults.map((r) => ({
+      employeeId: (r.employeeId || '').replaceAll(',', ' '),
       name: (r.name || '').replaceAll(',', ' '),
       department: (r.department || '').replaceAll(',', ' '),
       quiz: (r.quizTitle || '').replaceAll(',', ' '),
@@ -140,7 +147,7 @@ export default function AdminResults() {
       submittedAt: fmt(toDate(r.createdAt)).replaceAll(',', ' ')
     }));
 
-    const header = Object.keys(rows[0] || { name: '', department: '', quiz: '', score: '', total: '', percent: '', timeTakenSec: '', submittedAt: '' }).join(',');
+    const header = Object.keys(rows[0] || { employeeId: '', name: '', department: '', quiz: '', score: '', total: '', percent: '', timeTakenSec: '', submittedAt: '' }).join(',');
     const body = rows.map(o => Object.values(o).join(',')).join('\n');
     const csv = header + '\n' + body;
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `quiz_results_${Date.now()}.csv`);
@@ -149,6 +156,7 @@ export default function AdminResults() {
   const clearFilters = () => {
     setFilterDept('');
     setSearchName('');
+    setSearchEmpId('');
     setFromDate('');
     setToDateStr('');
   };
@@ -242,6 +250,11 @@ export default function AdminResults() {
             </label>
 
             <label className="field">
+              <span>Employee ID</span>
+              <input value={searchEmpId} onChange={(e) => setSearchEmpId(e.target.value.toUpperCase())} placeholder="HSL0001" />
+            </label>
+
+            <label className="field">
               <span>From</span>
               <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
             </label>
@@ -292,7 +305,8 @@ export default function AdminResults() {
                 <table className="table results-table">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th>Employee ID</th>
+                  <th>Name</th>
                       <th>Dept</th>
                       <th>Quiz</th>
                       <th>Score</th>
@@ -306,6 +320,7 @@ export default function AdminResults() {
                       const dt = toDate(r.createdAt);
                       return (
                         <tr key={r.id} className={selectedResult?.id === r.id ? 'active' : ''}>
+                          <td><span className="pill" style={{ padding: '4px 10px' }}>{r.employeeId || '—'}</span></td>
                           <td>
                             <button className="linkbtn" onClick={() => openResult(r)}>{r.name || '—'}</button>
                           </td>

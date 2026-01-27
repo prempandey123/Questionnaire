@@ -107,9 +107,10 @@ export async function listQuestions(quizId) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-export async function submitResult({ name, department, quizId, quizTitle, answers, score, total, timeTakenSec }) {
+export async function submitResult({ employeeId, name, department, quizId, quizTitle, answers, score, total, timeTakenSec }) {
   // Keep schema compatible with your earlier project (quizResults)
   await addDoc(resultsCol, {
+    employeeId: (employeeId || '').trim().toUpperCase(),
     name: name.trim(),
     department: (department || '').trim(),
     quizId,
