@@ -47,3 +47,13 @@
 @media (max-width: 640px){
   .filters-grid{grid-template-columns: 1fr;}
 }
+
+
+/* Premium tweaks */
+.results-hero{gap:14px;}
+.results-actions .btn{border-radius: var(--radius-sm);} 
+.results-filters{box-shadow: var(--shadow-sm);} 
+.results-wrap{gap:18px;}
+.linkbtn{font-weight:900;}
+tr.active td{background: rgba(var(--accent-rgb),0.05) !important;}
+.answer-card{border:1px solid var(--border); border-radius: var(--radius); background: rgba(255,255,255,0.92); box-shadow: var(--shadow-sm);}
