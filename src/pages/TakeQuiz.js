@@ -30,6 +30,9 @@ export default function TakeQuiz() {
 
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME_SEC);
 
+  // Language: 'en' | 'hi'
+  const [lang, setLang] = useState(localStorage.getItem('quiz_lang') || 'en');
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState('');
@@ -123,9 +126,12 @@ export default function TakeQuiz() {
         return {
           questionId: q.id,
           questionText: q.text || '',
+          questionTextHi: q.textHi || '',
           selectedOptionIndex: selIdx,
           selectedOptionText: chosen?.text ?? null,
+          selectedOptionTextHi: chosen?.textHi ?? null,
           correctOptionText: correct?.text ?? null,
+          correctOptionTextHi: correct?.textHi ?? null,
           isCorrect: Boolean(chosen && chosen.isCorrect)
         };
       });
@@ -153,6 +159,13 @@ export default function TakeQuiz() {
   const mm = String(Math.floor(Math.max(timeLeft, 0) / 60)).padStart(2, '0');
   const ss = String(Math.max(timeLeft, 0) % 60).padStart(2, '0');
 
+  const setLanguage = (next) => {
+    setLang(next);
+    localStorage.setItem('quiz_lang', next);
+  };
+
+  const qText = current ? (lang === 'hi' && current.textHi ? current.textHi : current.text) : '';
+
   return (
     <>
       <Header />
@@ -175,6 +188,26 @@ export default function TakeQuiz() {
                   <div className="pill" style={{ justifyContent: 'center', minWidth: 120 }}>
                     ⏳ <b>{mm}:{ss}</b>
                   </div>
+
+                  <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button
+                      className={`btn ${lang === 'en' ? 'btn-primary' : 'secondary'}`}
+                      style={{ padding: '8px 10px' }}
+                      onClick={() => setLanguage('en')}
+                      type="button"
+                    >
+                      EN
+                    </button>
+                    <button
+                      className={`btn ${lang === 'hi' ? 'btn-primary' : 'secondary'}`}
+                      style={{ padding: '8px 10px' }}
+                      onClick={() => setLanguage('hi')}
+                      type="button"
+                    >
+                      HI
+                    </button>
+                  </div>
+
                   <div style={{ marginTop: 10 }}>
                     <div className="muted" style={{ fontSize: 12 }}>Progress</div>
                     <div className="kpi">
@@ -194,7 +227,7 @@ export default function TakeQuiz() {
                 <div className="alert">No question available.</div>
               ) : (
                 <>
-                  <h3>Q{index + 1}. {current.text}</h3>
+                  <h3>Q{index + 1}. {qText}</h3>
                   <div className="muted" style={{ marginBottom: 12 }}>Points: {current.points || 1}</div>
 
                   <div className="stack">
@@ -208,7 +241,7 @@ export default function TakeQuiz() {
                             checked={checked}
                             onChange={() => choose(current.id, idx)}
                           />
-                          <div>{opt.text}</div>
+                          <div>{lang === 'hi' && opt.textHi ? opt.textHi : opt.text}</div>
                         </label>
                       );
                     })}

@@ -16,12 +16,13 @@ import './AdminDashboard.css';
 function emptyQuestion() {
   return {
     text: '',
+    textHi: '',
     points: 1,
     options: [
-      { text: '', isCorrect: true },
-      { text: '', isCorrect: false },
-      { text: '', isCorrect: false },
-      { text: '', isCorrect: false }
+      { text: '', textHi: '', isCorrect: true },
+      { text: '', textHi: '', isCorrect: false },
+      { text: '', textHi: '', isCorrect: false },
+      { text: '', textHi: '', isCorrect: false }
     ]
   };
 }
@@ -175,6 +176,13 @@ export default function AdminDashboard() {
     }));
   };
 
+  const updateOptTextHi = (idx, textHi) => {
+    setQuestion((prev) => ({
+      ...prev,
+      options: prev.options.map((o, i) => (i === idx ? { ...o, textHi } : o))
+    }));
+  };
+
   const saveQuestion = async () => {
     setErr('');
     setMsg('');
@@ -187,7 +195,11 @@ export default function AdminDashboard() {
       setErr('Question text is required');
       return;
     }
-    const cleanOpts = question.options.map((o) => ({ ...o, text: (o.text || '').trim() }));
+    const cleanOpts = question.options.map((o) => ({
+      ...o,
+      text: (o.text || '').trim(),
+      textHi: (o.textHi || '').trim()
+    }));
     if (cleanOpts.some((o) => !o.text)) {
       setErr('All 4 options are required');
       return;
@@ -557,6 +569,16 @@ export default function AdminDashboard() {
                         />
                       </label>
 
+                      <label className="field">
+                        <span>Question (Hindi) <span className="muted" style={{ fontWeight: 500 }}>(optional)</span></span>
+                        <textarea
+                          value={question.textHi}
+                          onChange={(e) => setQuestion((p) => ({ ...p, textHi: e.target.value }))}
+                          rows={3}
+                          placeholder="प्रश्न हिंदी में (optional)…"
+                        />
+                      </label>
+
                       <div className="opt-grid">
                         {question.options.map((o, idx) => (
                           <div className={`opt ${o.isCorrect ? 'correct' : ''}`} key={idx}>
@@ -576,6 +598,12 @@ export default function AdminDashboard() {
                               value={o.text}
                               onChange={(e) => updateOptText(idx, e.target.value)}
                               placeholder={`Option ${idx + 1} text…`}
+                            />
+
+                            <input
+                              value={o.textHi}
+                              onChange={(e) => updateOptTextHi(idx, e.target.value)}
+                              placeholder={`Option ${idx + 1} text (Hindi) — optional…`}
                             />
                           </div>
                         ))}
@@ -611,11 +639,13 @@ export default function AdminDashboard() {
                           <div className="q-item" key={q.id}>
                             <div className="q-title">
                               {i + 1}. {q.text}
+                              {q.textHi ? <div className="muted" style={{ marginTop: 4 }}>{q.textHi}</div> : null}
                             </div>
                             <div className="q-opts">
                               {(q.options || []).map((o, idx) => (
                                 <div key={idx} className={`q-opt ${o.isCorrect ? 'ok' : ''}`}>
                                   {o.text}
+                                  {o.textHi ? <div className="muted" style={{ marginTop: 4 }}>{o.textHi}</div> : null}
                                 </div>
                               ))}
                             </div>

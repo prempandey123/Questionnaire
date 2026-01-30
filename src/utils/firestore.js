@@ -79,7 +79,11 @@ export async function getQuestionnaire(quizId) {
 }
 
 export async function addQuestion(quizId, question) {
-  // question: { text, options: [{text, isCorrect}], points }
+  // question: {
+  //   text, textHi (optional),
+  //   options: [{ text, textHi (optional), isCorrect }],
+  //   points
+  // }
   const qCol = collection(db, 'questionnaires', quizId, 'questions');
   const qSnap = await getDocs(qCol);
   if (qSnap.size >= LIMITS.questionsPerQuestionnaire) {
@@ -88,8 +92,13 @@ export async function addQuestion(quizId, question) {
 
   const ref = await addDoc(qCol, {
     text: question.text.trim(),
+    textHi: (question.textHi || '').trim(),
     points: Number(question.points || 1),
-    options: question.options.map(o => ({ text: o.text.trim(), isCorrect: Boolean(o.isCorrect) })),
+    options: question.options.map(o => ({
+      text: (o.text || '').trim(),
+      textHi: (o.textHi || '').trim(),
+      isCorrect: Boolean(o.isCorrect)
+    })),
     createdAt: serverTimestamp()
   });
 
