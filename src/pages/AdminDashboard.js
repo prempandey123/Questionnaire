@@ -47,6 +47,7 @@ export default function AdminDashboard() {
 
   // create questionnaire
   const [title, setTitle] = useState('');
+  const [designation, setDesignation] = useState('');
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(true);
   const [deptSelectionMode, setDeptSelectionMode] = useState('ALL'); // ALL | SOME
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
   const [questions, setQuestions] = useState([]);
   const [question, setQuestion] = useState(emptyQuestion());
   const [savingQ, setSavingQ] = useState(false);
+  const [translatingHi, setTranslatingHi] = useState(false);
 
   // analytics filters
   const [analyticsDept, setAnalyticsDept] = useState(''); // '' => all
@@ -78,6 +80,48 @@ export default function AdminDashboard() {
       setErr(e?.message || 'Failed to load');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // --- Hindi auto-translate helpers (client-side) ---
+  // Uses Google's public translate endpoint (no key). Works for light usage.
+  // Note: For heavy/production usage, consider a proper translation service & caching.
+  const translateToHindi = async (text) => {
+    const q = (text || '').trim();
+    if (!q) return '';
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=hi&dt=t&q=${encodeURIComponent(q)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Hindi translation failed');
+    const data = await res.json();
+    const parts = Array.isArray(data?.[0]) ? data[0] : [];
+    return parts.map((p) => p?.[0]).filter(Boolean).join('');
+  };
+
+  const autoTranslateCurrentToHindi = async () => {
+    // Translates current Question + all option texts into Hindi fields.
+    try {
+      setMsg('');
+      setErr('');
+      setTranslatingHi(true);
+
+      const baseQ = question;
+      const [qHi, ...optHis] = await Promise.all([
+        translateToHindi(baseQ.text),
+        ...baseQ.options.map((o) => translateToHindi(o.text))
+      ]);
+
+      setQuestion((p) => ({
+        ...p,
+        textHi: qHi || p.textHi,
+        options: p.options.map((o, idx) => ({
+          ...o,
+          textHi: optHis[idx] || o.textHi
+        }))
+      }));
+    } catch (e) {
+      setErr(e?.message || 'Hindi translation failed');
+    } finally {
+      setTranslatingHi(false);
     }
   };
 
@@ -118,8 +162,9 @@ export default function AdminDashboard() {
     setMsg('');
     try {
       const departments = deptSelectionMode === 'ALL' ? [] : selectedDepts;
-      const id = await createQuestionnaire({ title, description, isPublished, departments });
+      const id = await createQuestionnaire({ title, designation, description, isPublished, departments });
       setTitle('');
+      setDesignation('');
       setDescription('');
       setIsPublished(true);
       setDeptSelectionMode('ALL');
@@ -431,6 +476,16 @@ export default function AdminDashboard() {
                       </label>
 
                       <label className="field">
+                        <span>Questionnaire Designation</span>
+                        <input
+                          value={designation}
+                          onChange={(e) => setDesignation(e.target.value)}
+                          placeholder="e.g. Operator / Supervisor / Manager"
+                        />
+                        <div className="tiny muted">Optional: shows as a tag on the employee side.</div>
+                      </label>
+
+                      <label className="field">
                         <span>Description</span>
                         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Short description…" />
                       </label>
@@ -492,6 +547,7 @@ export default function AdminDashboard() {
                           <thead>
                             <tr>
                               <th>Title</th>
+                              <th>Designation</th>
                               <th>Published</th>
                               <th>Questions</th>
                               <th className="right">Actions</th>
@@ -505,6 +561,9 @@ export default function AdminDashboard() {
                                     {q.title}
                                   </button>
                                   <div className="tiny muted">{q.description}</div>
+                                </td>
+                                <td>
+                                  {q.designation ? <span className="badge">{q.designation}</span> : <span className="muted">—</span>}
                                 </td>
                                 <td>
                                   <span className={`badge ${q.isPublished ? 'ok' : 'muted'}`}>
@@ -570,7 +629,21 @@ export default function AdminDashboard() {
                       </label>
 
                       <label className="field">
-                        <span>Question (Hindi) <span className="muted" style={{ fontWeight: 500 }}>(optional)</span></span>
+                        <div className="row between" style={{ alignItems: 'center' }}>
+                          <span>
+                            Question (Hindi) <span className="muted" style={{ fontWeight: 500 }}>(optional)</span>
+                          </span>
+                          <button
+                            type="button"
+                            className="btn tiny"
+                            onClick={autoTranslateCurrentToHindi}
+                            disabled={translatingHi || !question.text.trim()}
+                            title="Auto translate question + options to Hindi"
+                            style={{ padding: '6px 10px', borderRadius: 999 }}
+                          >
+                            {translatingHi ? 'Translating…' : 'Hindi'}
+                          </button>
+                        </div>
                         <textarea
                           value={question.textHi}
                           onChange={(e) => setQuestion((p) => ({ ...p, textHi: e.target.value }))}

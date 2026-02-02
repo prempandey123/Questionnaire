@@ -119,7 +119,10 @@ export default function EmployeeHome() {
                     <div key={q.id} className="card card-hover">
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                         <div>
-                          <div className="badge">Questions: {q.questionsCount || 0}/15</div>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <div className="badge">Questions: {q.questionsCount || 0}/15</div>
+                            {q.designation ? <div className="badge">Designation: {q.designation}</div> : null}
+                          </div>
                           <h3 style={{ marginTop: 10 }}>{q.title}</h3>
                           {q.description ? <div className="muted" style={{ marginTop: 4 }}>{q.description}</div> : null}
                         </div>
