@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 export default function Header({ mode }) {
   const loc = useLocation();
@@ -8,8 +10,10 @@ export default function Header({ mode }) {
 
   const logout = () => {
     if (isAdmin) {
-      localStorage.removeItem('admin_authed');
-      nav('/admin');
+      // Admin uses Firebase Auth (rules depend on request.auth.uid)
+      signOut(auth).finally(() => {
+        nav('/admin');
+      });
     } else {
       nav('/');
     }
