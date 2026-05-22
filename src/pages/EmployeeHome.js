@@ -105,7 +105,7 @@ export default function EmployeeHome() {
           <div className="col">
             <div className="card">
               <h2>Available Questionnaires</h2>
-              <p className="muted">Choose one to start (each has 15 questions (3 min timer)).</p>
+              <p className="muted">Choose one to start (each has 15 questions (10 min timer)).</p>
 
               {loading ? (
                 <p className="muted">Loading...</p>
