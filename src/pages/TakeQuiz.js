@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import { getQuestionnaire, listQuestions, submitResult } from '../utils/firestore';
 import { LIMITS } from '../config';
 
-const TOTAL_TIME_SEC = 180; // 2 minutes
+const TOTAL_TIME_SEC = 600; // 2 minutes
 
 function calcScore(questions, selected) {
   let score = 0;
