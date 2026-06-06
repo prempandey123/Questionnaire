@@ -7,6 +7,7 @@ import {
   updateQuestionnaire,
   deleteQuestionnaire,
   addQuestion,
+  updateQuestion,
   listQuestions,
   listResults
 } from '../utils/firestore';
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
   const [selectedQuizId, setSelectedQuizId] = useState('');
   const [questions, setQuestions] = useState([]);
   const [question, setQuestion] = useState(emptyQuestion());
+  const [editingQuestionId, setEditingQuestionId] = useState('');
   const [savingQ, setSavingQ] = useState(false);
   const [translatingHi, setTranslatingHi] = useState(false);
 
@@ -132,6 +134,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     (async () => {
+      setEditingQuestionId('');
+      setQuestion(emptyQuestion());
       if (!selectedQuizId) {
         setQuestions([]);
         return;
@@ -228,6 +232,32 @@ export default function AdminDashboard() {
     }));
   };
 
+  const startEditQuestion = (q) => {
+    setErr('');
+    setMsg('');
+    const currentOptions = q.options || [];
+    const fallbackOptions = emptyQuestion().options;
+    setEditingQuestionId(q.id);
+    setQuestion({
+      text: q.text || '',
+      textHi: q.textHi || '',
+      points: q.points || 1,
+      options: fallbackOptions.map((fallback, idx) => {
+        const opt = currentOptions[idx] || fallback;
+        return {
+          text: opt.text || '',
+          textHi: opt.textHi || '',
+          isCorrect: Boolean(opt.isCorrect)
+        };
+      })
+    });
+  };
+
+  const cancelEditQuestion = () => {
+    setEditingQuestionId('');
+    setQuestion(emptyQuestion());
+  };
+
   const saveQuestion = async () => {
     setErr('');
     setMsg('');
@@ -245,7 +275,7 @@ export default function AdminDashboard() {
       text: (o.text || '').trim(),
       textHi: (o.textHi || '').trim()
     }));
-    if (cleanOpts.some((o) => !o.text)) {
+    if (cleanOpts.length !== 4 || cleanOpts.some((o) => !o.text)) {
       setErr('All 4 options are required');
       return;
     }
@@ -256,11 +286,17 @@ export default function AdminDashboard() {
 
     try {
       setSavingQ(true);
-      await addQuestion(selectedQuizId, { ...question, options: cleanOpts });
+      if (editingQuestionId) {
+        await updateQuestion(selectedQuizId, editingQuestionId, { ...question, options: cleanOpts });
+        setEditingQuestionId('');
+        setMsg('Question updated.');
+      } else {
+        await addQuestion(selectedQuizId, { ...question, options: cleanOpts });
+        setMsg('Question added.');
+      }
       setQuestion(emptyQuestion());
       const qs = await listQuestions(selectedQuizId);
       setQuestions(qs);
-      setMsg('Question added.');
       await refresh();
     } catch (e) {
       setErr(e?.message || 'Failed to save question');
@@ -572,6 +608,9 @@ export default function AdminDashboard() {
                                 </td>
                                 <td>{q.questionsCount || 0}</td>
                                 <td className="right">
+                                  <button className="btn" onClick={() => { setSelectedQuizId(q.id); setTab('questions'); }}>
+                                    Edit Questions
+                                  </button>
                                   <button className="btn" onClick={() => togglePublish(q)}>
                                     {q.isPublished ? 'Unpublish' : 'Publish'}
                                   </button>
@@ -595,11 +634,11 @@ export default function AdminDashboard() {
                 <div className="grid grid-2 gap-16">
                   <div className="card">
                     <div className="card-head">
-                      <h3>Add Question</h3>
+                      <h3>{editingQuestionId ? 'Edit Question' : 'Add Question'}</h3>
                       <div className="controls">
                         <label className="field">
                           <span>Questionnaire</span>
-                          <select value={selectedQuizId} onChange={(e) => setSelectedQuizId(e.target.value)}>
+                          <select value={selectedQuizId} onChange={(e) => setSelectedQuizId(e.target.value)} disabled={Boolean(editingQuestionId)}>
                             <option value="">Select…</option>
                             {quizzes.map((q) => (
                               <option key={q.id} value={q.id}>
@@ -614,6 +653,7 @@ export default function AdminDashboard() {
                     {selectedQuiz ? (
                       <div className="muted">
                         {selectedQuiz.title} • {questions.length}/{LIMITS.questionsPerQuestionnaire} questions
+                        {editingQuestionId ? ' • Editing selected question' : ''}
                       </div>
                     ) : null}
 
@@ -693,9 +733,16 @@ export default function AdminDashboard() {
                           />
                         </label>
 
-                        <button className="btn primary" onClick={saveQuestion} disabled={savingQ}>
-                          {savingQ ? 'Saving…' : 'Add Question'}
-                        </button>
+                        <div className="controls">
+                          {editingQuestionId ? (
+                            <button className="btn" onClick={cancelEditQuestion} disabled={savingQ}>
+                              Cancel
+                            </button>
+                          ) : null}
+                          <button className="btn primary" onClick={saveQuestion} disabled={savingQ}>
+                            {savingQ ? 'Saving…' : editingQuestionId ? 'Update Question' : 'Add Question'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -703,7 +750,7 @@ export default function AdminDashboard() {
                   <div className="card">
                     <div className="card-head">
                       <h3>Questions</h3>
-                      <div className="muted">Preview (latest)</div>
+                      <div className="muted">Preview / Edit</div>
                     </div>
 
                     {questions.length ? (
@@ -711,8 +758,15 @@ export default function AdminDashboard() {
                         {questions.map((q, i) => (
                           <div className="q-item" key={q.id}>
                             <div className="q-title">
-                              {i + 1}. {q.text}
-                              {q.textHi ? <div className="muted" style={{ marginTop: 4 }}>{q.textHi}</div> : null}
+                              <div className="row between" style={{ alignItems: 'flex-start', gap: 10 }}>
+                                <div>
+                                  {i + 1}. {q.text}
+                                  {q.textHi ? <div className="muted" style={{ marginTop: 4 }}>{q.textHi}</div> : null}
+                                </div>
+                                <button className="btn tiny" onClick={() => startEditQuestion(q)} style={{ padding: '6px 10px' }}>
+                                  Edit
+                                </button>
+                              </div>
                             </div>
                             <div className="q-opts">
                               {(q.options || []).map((o, idx) => (

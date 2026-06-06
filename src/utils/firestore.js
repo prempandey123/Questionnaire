@@ -111,6 +111,20 @@ export async function addQuestion(quizId, question) {
   return ref.id;
 }
 
+export async function updateQuestion(quizId, questionId, question) {
+  const ref = doc(db, 'questionnaires', quizId, 'questions', questionId);
+  await updateDoc(ref, {
+    text: question.text.trim(),
+    textHi: (question.textHi || '').trim(),
+    points: Number(question.points || 1),
+    options: question.options.map(o => ({
+      text: (o.text || '').trim(),
+      textHi: (o.textHi || '').trim(),
+      isCorrect: Boolean(o.isCorrect)
+    }))
+  });
+}
+
 export async function listQuestions(quizId) {
   const qCol = collection(db, 'questionnaires', quizId, 'questions');
   const snap = await getDocs(query(qCol, orderBy('createdAt', 'asc')));
